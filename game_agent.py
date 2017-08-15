@@ -42,7 +42,7 @@ def custom_score(game, player):
 
     player_moves = len(game.get_legal_moves(player))
     forecast_move = game.forecast_move(move)
-    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    opp_moves = len(forecast_move.get_legal_moves(game.get_opponent(player)))
     return float(player_moves - opp_moves)
 
 
@@ -69,7 +69,19 @@ def custom_score_2(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
+    if game.is_winner(player):
+        return float("inf")
+
+    player_moves = len(game.get_legal_moves(player))
+    forecast_move = game.forecast_move(move)
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    competitive_moves = 0
+    for move in opp_moves:
+        if move in player_moves:
+            competitive_moves += 1
+    return float(player_moves - opp_moves + player_moves)
 
 
 def custom_score_3(game, player):
@@ -120,7 +132,7 @@ class IsolationPlayer:
         positive value large enough to allow the function to return before the
         timer expires.
     """
-    def __init__(self, search_depth=3, score_fn=custom_score, timeout=10.):
+    def __init__(self, search_depth=3, score_fn=custom_score_2, timeout=10.):
         self.search_depth = search_depth
         self.score = score_fn
         self.time_left = None
@@ -220,34 +232,35 @@ class MinimaxPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-
-        def min(self, game, depth):
-            if self.time_left() < self.TIMER_THRESHOLD:
-                raise SearchTimeout()
-            score = float("inf")
-            if depth == 0:
-                return self.score(game, self)
-            for move in game.get_legal_moves():
-                min_value = self.min(min_value, self.max(game.forecast_move(move), depth - 1))
-            return min_value
-
-        def max(self, game, depth):
-            if self.time_left() < self.TIMER_THRESHOLD:
-                raise SearchTimeout()
-            score = float("-inf")
-            if depth == 0:
-                return self.score(game, self)
-            for move in game.get_legal_moves():
-                min_value = self.min(min_value, self.max(game.forecast_move(move), depth - 1))
-            return min_value
-
         best_move = (-1, -1)
         best_score = float("-inf")
 
-        for move in game.get_legal_moves(self)
-            current_score = self.min(game.forecast_move(move), depth - 1)
-            if current_score > best_score
-            best_score, best_move = current_score, move
+        for move in game.get_legal_moves():
+            current_score = self.min_value(game.forecast_move(move), depth - 1)
+            if current_score > best_score:
+                best_score, best_move = current_score, move
+
+
+    def min_value(self, game, depth):
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        v = float("inf")
+        if depth == 0:
+            return self.score(game, self)
+        for move in game.get_legal_moves():
+            v = min(v, self.max_value(game.forecast_move(move), depth - 1))
+        return v
+
+    def max_value(self, game, depth):
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        v = float("-inf")
+        if depth == 0:
+            return self.score(game, self)
+        for move in game.get_legal_moves():
+            v = max(v, self.min_value(game.forecast_move(move), depth - 1))
+        return v
+
         # TODO: finish this function!
 
 
@@ -358,39 +371,41 @@ class AlphaBetaPlayer(IsolationPlayer):
         best_move = (-1, -1)
         best_score = float("-inf")
 
-        def max_value(self, game, alpha, beta, depth):
-            if self.time_left() < self.TIMER_THRESHOLD:
-                raise SearchTimeout()
-            if depth <= 0
-                return best_move
-
-            for move in game.get_legal_moves():
-                result = game.forecast_move(move)
-                v = max(v, self.min_value(result, alpha, beta, depth))
-                if v >= beta:
-                    return v
-                alpha = max(alpha, v)
-            return v
-
-        def min_value(self, game, alpha, beta, depth):
-            if self.time_left() < self.TIMER_THRESHOLD:
-                raise SearchTimeout()
-            if depth <= 0
-                return best_move
-
-            for move in game.get_legal_moves():
-                result = game.forecast_move(move)
-                v = min(v, self.min_value(result, alpha, beta, depth))
-                if v <= alpha:
-                    return v
-                beta = min(beta, v)
-            return v
-
-        for move in game.get_legal_moves(self)
-            current_score = self.min(game.forecast_move(move), depth - 1)
-            if current_score > best_score
+        for move in game.get_legal_moves():
+            current_score = self.min_value(game.forecast_move(move), float("-inf"), float("inf"), depth - 1)
+            if current_score > best_score:
                 best_score, best_move = current_score, move
             alpha = max(alpha, best_move)
         return best_move
+
+    def max_value(self, game, alpha, beta, depth):
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        if depth <= 0:
+            return best_move
+
+        v = float ("-inf")
+        for move in game.get_legal_moves():
+            result = game.forecast_move(move)
+            v = max(v, self.min_value(result, alpha, beta, depth))
+            if v >= beta:
+                return v
+            alpha = max(alpha, v)
+        return v
+
+    def min_value(self, game, alpha, beta, depth):
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
+        if depth <= 0:
+            return best_move
+
+        v = float("inf")
+        for move in game.get_legal_moves():
+            result = game.forecast_move(move)
+            v = min(v, self.max_value(result, alpha, beta, depth))
+            if v <= alpha:
+                return v
+            beta = min(beta, v)
+        return v
 
         # TODO: finish this function!
