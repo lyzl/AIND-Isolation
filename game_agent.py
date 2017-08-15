@@ -281,6 +281,8 @@ class AlphaBetaPlayer(IsolationPlayer):
         """
         self.time_left = time_left
 
+
+
         # TODO: finish this function!
         raise NotImplementedError
 
@@ -332,5 +334,42 @@ class AlphaBetaPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
+        best_move = (-1, -1)
+        best_score = float("-inf")
+
+        def max_value(self, game, alpha, beta, depth):
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+            if depth <= 0
+                return best_move
+
+            for move in game.get_legal_moves():
+                result = game.forecast_move(move)
+                v = max(v, self.min_value(result, alpha, beta, depth))
+                if v >= beta:
+                    return v
+                alpha = max(alpha, v)
+            return v
+
+        def min_value(self, game, alpha, beta, depth):
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+            if depth <= 0
+                return best_move
+
+            for move in game.get_legal_moves():
+                result = game.forecast_move(move)
+                v = min(v, self.min_value(result, alpha, beta, depth))
+                if v <= alpha:
+                    return v
+                beta = min(beta, v)
+            return v
+
+        for move in game.get_legal_moves(self)
+            current_score = self.min(game.forecast_move(move), depth - 1)
+            if current_score > best_score
+                best_score, best_move = current_score, move
+            alpha = max(alpha, best_move)
+        return best_move
+
         # TODO: finish this function!
-        raise NotImplementedError
