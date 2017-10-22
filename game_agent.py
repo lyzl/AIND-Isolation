@@ -4,7 +4,6 @@ and include the results in your report.
 """
 import random
 
-
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
     pass
@@ -35,16 +34,11 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    if game.is_loser(player):
-        return float("-inf")
-    if game.is_winner(player):
-        return float("inf")
-
-    player_moves = len(game.get_legal_moves(player))
-    forecast_move = game.forecast_move(move)
-    opp_moves = len(forecast_move.get_legal_moves(game.get_opponent(player)))
-    return float(player_moves - opp_moves)
-
+    own_moves = game.get_legal_moves(player)
+    opp_moves = game.get_legal_moves(game.get_opponent(player))
+    w, h = game.width / 2., game.height / 2.
+    y1, x1 = game.get_player_location(player)
+    return float(len(own_moves) - len(opp_moves)) - (float((h - y1) ** 2 + (w - x1) ** 2)) ** 0.5
 
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -74,15 +68,22 @@ def custom_score_2(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    player_moves = len(game.get_legal_moves(player))
-    forecast_move = game.forecast_move(move)
-    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    """
+    player_location = game.get_player_location(player)
+    player_moves = game.get_legal_moves(player)
+    opp_moves = game.get_legal_moves(game.get_opponent(player))
     competitive_moves = 0
     for move in opp_moves:
-        if move in player_moves:
+        if move == player_location:
             competitive_moves += 1
-    return float(player_moves - opp_moves + player_moves)
-
+    return float(len(player_moves) - len(opp_moves) + competitive_moves)
+    """
+    own_moves = game.get_legal_moves(player)
+    opp_moves = game.get_legal_moves(game.get_opponent(player))
+    w, h = game.width / 2., game.height / 2.
+    y1, x1 = game.get_player_location(player)
+    y2, x2 = game.get_player_location(game.get_opponent(player))
+    return float(len(own_moves) - len(opp_moves)) - (float((h - y1) ** 2 + (w - x1) ** 2)) ** 0.5 + (float((h - y2) ** 2 + (w - x2) ** 2)) ** 0.5
 
 def custom_score_3(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -107,7 +108,16 @@ def custom_score_3(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
+    if game.is_winner(player):
+        return float("inf")
+
+    own_moves = game.get_legal_moves(player)
+    opp_moves = game.get_legal_moves(game.get_opponent(player))
+    w, h = game.width / 2., game.height / 2.
+    y1, x1 = game.get_player_location(player)
+    return float(len(own_moves) - len(opp_moves) - abs(h - y1) - abs(w - x1))
 
 
 class IsolationPlayer:
